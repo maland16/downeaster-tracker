@@ -11,16 +11,21 @@ response = requests.get('https://asm-backend.transitdocs.com/gtfs/amtrak')
 feed.ParseFromString(response.content)
 
 for entity in feed.entity:
-  if entity.HasField('trip_update'):
+  #if entity.HasField('trip_update'): # uncomment to filter for schedules instead of vehicles
     dicto = MessageToDict(entity)
 
     train_num = 0
 
     try:
+        # Seems like the schedule is under one ID that ends in "_123" where 123 is the train #
         train_num = int(dicto['id'].split("_")[-1])
     except:
-        print("Failed to parse" + dicto["id"])
+        try:
+            # And the vehicle positions are under another ID that ends in "_123_V"
+            train_num = int(dicto["id"].split("_")[-2])
+        except:
+            print("Failed to parse" + dicto["id"])
 
     if train_num in downeasters:
-        print(json.dumps(dicto, sort_keys=True, indent=4))
+        print(json.dumps(dicto, sort_keys=True, indent=3))
     
